@@ -159,6 +159,7 @@ export default function App() {
   const [showExportBox, setShowExportBox] = useState(false);
   const [showImportBox, setShowImportBox] = useState(false);
   const [importText, setImportText]       = useState("");
+  const [cumulativeReview, setCumulativeReview] = useState(null); // { afterFrame: 3, cards: [] }
   const inputRef  = useRef(null);
   const saveTimer = useRef(null);
 
@@ -250,7 +251,75 @@ export default function App() {
     });
   }
 
-  // ── export / import ───────────────────────────────────────────────────────
+  // ── cumulative review helpers ─────────────────────────────────────────────
+  // Every 3 frames passed, a cumulative review gates the next frame.
+  // Stored in progress as { cumulative_3: { passed, score }, cumulative_6: ... }
+  // 20 cards drawn randomly from all frames passed so far, written-only, 85% gate.
+
+  const CUMULATIVE_EVERY = 3; // review required after every Nth frame
+  const CUMULATIVE_CARDS = 20;
+
+  function getCumulativeKey(afterFrameIdx) {
+    return `cumulative_${afterFrameIdx + 1}`; // e.g. cumulative_3 after frame index 2
+  }
+
+  function isCumulativePassed(afterFrameIdx) {
+    const key = getCumulativeKey(afterFrameIdx);
+    return progress[key]?.passed === true;
+  }
+
+  function markCumulativePassed(afterFrameIdx, score) {
+    const key = getCumulativeKey(afterFrameIdx);
+    setProgress(prev => ({ ...prev, [key]: { passed: score >= PASS_THRESHOLD, score } }));
+  }
+
+  function manualMarkCumulative(afterFrameIdx) {
+    const key = getCumulativeKey(afterFrameIdx);
+    setProgress(prev => ({ ...prev, [key]: { passed: true, score: 1.0 } }));
+  }
+
+  function manualUnmarkCumulative(afterFrameIdx) {
+    const key = getCumulativeKey(afterFrameIdx);
+    setProgress(prev => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  }
+
+  // Is cumulative review required before unlocking frameIdx?
+  // Required if frameIdx is a multiple of CUMULATIVE_EVERY (0-indexed: frames 3,6,9,12)
+  function cumulativeRequiredBefore(frameIdx) {
+    return frameIdx > 0 && frameIdx % CUMULATIVE_EVERY === 0;
+  }
+
+  // Is the cumulative review blocking this frame?
+  function cumulativeBlocking(frameIdx) {
+    if (!cumulativeRequiredBefore(frameIdx)) return false;
+    const afterFrameIdx = frameIdx - 1; // the last frame of the completed group
+    return !isCumulativePassed(afterFrameIdx);
+  }
+
+  function buildCumulativeCards(upToFrameIdx) {
+    // Collect all cards from passed frames up to and including upToFrameIdx
+    const allCards = [];
+    for (let i = 0; i <= upToFrameIdx; i++) {
+      const fp = getFrameProgress(FRAMES[i].id);
+      if (fp.passed) allCards.push(...FRAMES[i].cards);
+    }
+    return shuffle(allCards).slice(0, CUMULATIVE_CARDS);
+  }
+
+  function startCumulativeReview(afterFrameIdx) {
+    const cards = buildCumulativeCards(afterFrameIdx);
+    setCumulativeReview({ afterFrameIdx, cards });
+    const shuffled = shuffle(cards);
+    setQueue(shuffled);
+    setCardIdx(0);
+    setFlipped(false); setSelected(null); setTypedAnswer(""); setFeedback(null);
+    setSessionScore({correct:0, total:0}); setMissedCards([]); setRound(1);
+    setView("cumulative");
+  }
 
   function toggleExport() { setShowExportBox(v => !v); setShowImportBox(false); }
   function toggleImport() { setShowImportBox(v => !v); setShowExportBox(false); setImportText(""); }
@@ -382,43 +451,85 @@ export default function App() {
       <div style={S.frameList}>
         {FRAMES.map((frame, fi) => {
           const fp = getFrameProgress(frame.id);
-          const locked = fi > 0 && !getFrameProgress(FRAMES[fi-1].id).passed;
+          const prevPassed = fi === 0 || getFrameProgress(FRAMES[fi-1].id).passed;
+          const cumulativeLocked = cumulativeBlocking(fi);
+          const locked = !prevPassed || cumulativeLocked;
+
+          // If this frame needs a cumulative review before it, show the review card
+          const needsCumulativeCard = cumulativeRequiredBefore(fi) && prevPassed && cumulativeLocked;
+          const afterFrameIdx = fi - 1;
+          const cumKey = getCumulativeKey(afterFrameIdx);
+          const cumProgress = progress[cumKey];
+
           return (
-            <div key={frame.id} style={{...S.frameCard, opacity:locked?0.45:1}}>
-              <div style={S.frameTop}>
-                <div>
-                  <div style={S.frameNum}>FRAME {fi+1}</div>
-                  <div style={S.frameTitle}>{frame.title}</div>
-                  <div style={S.frameSub}>{frame.subtitle}</div>
-                </div>
-                <div style={S.frameStatus}>
-                  {fp.passed && <span style={S.passedBadge}>✓ PASSED</span>}
-                  {!fp.passed && fp.highestStage>=0 && <span style={S.inProgressBadge}>IN PROGRESS</span>}
-                  {!fp.passed && fp.highestStage<0 && !locked && <span style={S.newBadge}>NEW</span>}
-                  {locked && <span style={S.lockedBadge}>🔒</span>}
-                </div>
-              </div>
-              <div style={S.stageRow}>
-                {STAGES.map((s, si) => {
-                  const done = fp.stageScores?.[si] !== undefined;
-                  const stageLocked = locked || (si>0 && fp.stageScores?.[si-1]===undefined);
-                  return (
-                    <div key={s} style={S.stageBtnWrap}>
-                      <button disabled={stageLocked}
-                        onClick={()=>{ setActiveFrame(frame); setActiveStage(si); setView("explain"); }}
-                        style={{...S.stageBtn,...(done?S.stageDone:{}),...(!done&&!stageLocked?S.stageCurrent:{})}}>
-                        <span style={S.stageIcon}>{STAGE_ICONS[si]}</span>
-                        <span style={S.stageLbl}>{STAGE_LABELS[si]}</span>
-                        {fp.stageScores?.[si]!==undefined && <span style={S.stagePct}>{Math.round(fp.stageScores[si]*100)}%</span>}
-                      </button>
-                      <label style={S.overrideLabel}>
-                        <input type="checkbox" checked={done} style={S.overrideCheck}
-                          onChange={()=>done?manualUnmarkStage(frame.id,si):manualMarkStage(frame.id,si)}/>
-                        <span style={S.overrideTick}>{done?"✓":"○"}</span>
-                      </label>
+            <div key={frame.id}>
+              {/* Cumulative review gate card */}
+              {needsCumulativeCard && (
+                <div style={{...S.frameCard, background:"#fef8ee", border:`2px solid ${COPPER}`, marginBottom:"1rem"}}>
+                  <div style={S.frameTop}>
+                    <div>
+                      <div style={{...S.frameNum, color:COPPER}}>CUMULATIVE REVIEW</div>
+                      <div style={S.frameTitle}>Frames 1–{fi} Mixed Test</div>
+                      <div style={S.frameSub}>20 cards drawn from all completed frames · Written only · 85% to unlock Frame {fi+1}</div>
                     </div>
-                  );
-                })}
+                    <div style={S.frameStatus}>
+                      {cumProgress?.passed
+                        ? <span style={S.passedBadge}>✓ PASSED</span>
+                        : <span style={S.inProgressBadge}>REQUIRED</span>}
+                    </div>
+                  </div>
+                  <div style={{display:"flex", alignItems:"center", gap:"0.75rem"}}>
+                    <button style={{...S.startBtn, flex:1}}
+                      onClick={() => startCumulativeReview(afterFrameIdx)}>
+                      {cumProgress && !cumProgress.passed ? "↺ Retry Review" : "Begin Review →"}
+                    </button>
+                    <label style={S.overrideLabel} title="Mark as passed">
+                      <input type="checkbox" checked={!!cumProgress?.passed} style={S.overrideCheck}
+                        onChange={() => cumProgress?.passed
+                          ? manualUnmarkCumulative(afterFrameIdx)
+                          : manualMarkCumulative(afterFrameIdx)} />
+                      <span style={S.overrideTick}>{cumProgress?.passed ? "✓" : "○"}</span>
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              <div style={{...S.frameCard, opacity:locked?0.45:1}}>
+                <div style={S.frameTop}>
+                  <div>
+                    <div style={S.frameNum}>FRAME {fi+1}</div>
+                    <div style={S.frameTitle}>{frame.title}</div>
+                    <div style={S.frameSub}>{frame.subtitle}</div>
+                  </div>
+                  <div style={S.frameStatus}>
+                    {fp.passed && <span style={S.passedBadge}>✓ PASSED</span>}
+                    {!fp.passed && fp.highestStage>=0 && <span style={S.inProgressBadge}>IN PROGRESS</span>}
+                    {!fp.passed && fp.highestStage<0 && !locked && <span style={S.newBadge}>NEW</span>}
+                    {locked && <span style={S.lockedBadge}>🔒</span>}
+                  </div>
+                </div>
+                <div style={S.stageRow}>
+                  {STAGES.map((s, si) => {
+                    const done = fp.stageScores?.[si] !== undefined;
+                    const stageLocked = locked || (si>0 && fp.stageScores?.[si-1]===undefined);
+                    return (
+                      <div key={s} style={S.stageBtnWrap}>
+                        <button disabled={stageLocked}
+                          onClick={()=>{ setActiveFrame(frame); setActiveStage(si); setView("explain"); }}
+                          style={{...S.stageBtn,...(done?S.stageDone:{}),...(!done&&!stageLocked?S.stageCurrent:{})}}>
+                          <span style={S.stageIcon}>{STAGE_ICONS[si]}</span>
+                          <span style={S.stageLbl}>{STAGE_LABELS[si]}</span>
+                          {fp.stageScores?.[si]!==undefined && <span style={S.stagePct}>{Math.round(fp.stageScores[si]*100)}%</span>}
+                        </button>
+                        <label style={S.overrideLabel}>
+                          <input type="checkbox" checked={done} style={S.overrideCheck}
+                            onChange={()=>done?manualUnmarkStage(frame.id,si):manualMarkStage(frame.id,si)}/>
+                          <span style={S.overrideTick}>{done?"✓":"○"}</span>
+                        </label>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           );
@@ -550,6 +661,10 @@ export default function App() {
     const frameIdx = FRAMES.findIndex(f=>f.id===activeFrame.id);
     const nextStage = activeStage+1;
     const nextFrame = FRAMES[frameIdx+1];
+
+    // After passing a frame's test, check if cumulative review is now required
+    const cumulativeNowRequired = passed && activeStage===3 && nextFrame && cumulativeBlocking(frameIdx+1);
+
     return (
       <div style={S.root}>
         <div style={S.resultsWrap}>
@@ -560,6 +675,15 @@ export default function App() {
           </div>
           <div style={S.resultsSub}>{sessionScore.correct} correct of {sessionScore.total} attempts</div>
           {activeStage===3&&!passed&&<div style={S.resultsAdvice}>Score must reach 85% to advance.</div>}
+
+          {/* Cumulative review prompt */}
+          {cumulativeNowRequired && (
+            <div style={{background:"#fef8ee", border:`1px solid ${COPPER}`, borderRadius:6, padding:"0.8rem 1rem", maxWidth:420, textAlign:"center"}}>
+              <div style={{fontSize:"0.8rem", color:COPPER, fontWeight:"bold", letterSpacing:"0.1em", marginBottom:"0.3rem"}}>CUMULATIVE REVIEW REQUIRED</div>
+              <div style={{fontSize:"0.8rem", color:INK_MID}}>You've completed {frameIdx+1} frames. Before Frame {frameIdx+2} unlocks, you must pass a mixed test pulling from all frames so far.</div>
+            </div>
+          )}
+
           {missedCards.length>0&&(
             <div style={S.missedList}>
               <div style={S.missedTitle}>CARDS TO REVIEW</div>
@@ -574,7 +698,137 @@ export default function App() {
           <div style={S.resultsBtns}>
             <button style={S.retryBtn} onClick={()=>startStage(activeFrame,activeStage)}>↺ Retry</button>
             {passed&&nextStage<STAGES.length&&<button style={S.advanceBtn} onClick={()=>{setActiveStage(nextStage);setView("explain");}}>Next: {STAGE_LABELS[nextStage]} →</button>}
-            {passed&&nextStage>=STAGES.length&&nextFrame&&<button style={S.advanceBtn} onClick={()=>{setActiveFrame(nextFrame);setActiveStage(0);setView("explain");}}>Frame {frameIdx+2}: {nextFrame.title} →</button>}
+            {passed&&nextStage>=STAGES.length&&cumulativeNowRequired&&(
+              <button style={S.advanceBtn} onClick={()=>startCumulativeReview(frameIdx)}>
+                Cumulative Review →
+              </button>
+            )}
+            {passed&&nextStage>=STAGES.length&&!cumulativeNowRequired&&nextFrame&&(
+              <button style={S.advanceBtn} onClick={()=>{setActiveFrame(nextFrame);setActiveStage(0);setView("explain");}}>
+                Frame {frameIdx+2}: {nextFrame.title} →
+              </button>
+            )}
+            <button style={S.homeBtn} onClick={()=>setView("home")}>⌂ Home</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── CUMULATIVE REVIEW ────────────────────────────────────────────────────
+
+  if (view === "cumulative" && cumulativeReview) {
+    const card = queue[cardIdx];
+    const pct = Math.round((cardIdx/queue.length)*100);
+
+    function submitCumulative() {
+      if (!typedAnswer.trim()) return;
+      setFeedback(isCloseEnough(typedAnswer, card.sw));
+    }
+
+    function nextCumulativeCard(correct) {
+      const newScore = { correct: sessionScore.correct+(correct?1:0), total: sessionScore.total+1 };
+      const newMissed = correct ? missedCards : [...missedCards, card];
+      const isLast = cardIdx+1 >= queue.length;
+
+      if (isLast) {
+        const ratio = newScore.correct/newScore.total;
+        markCumulativePassed(cumulativeReview.afterFrameIdx, ratio);
+        setSessionScore(newScore);
+        setMissedCards(newMissed);
+        setView("cumulativeResults");
+      } else {
+        setCardIdx(c=>c+1);
+        setTypedAnswer(""); setFeedback(null);
+        if (inputRef.current) setTimeout(()=>inputRef.current?.focus(), 100);
+        setSessionScore(newScore);
+        setMissedCards(newMissed);
+      }
+    }
+
+    return (
+      <div style={S.root}>
+        <div style={S.drillHeader}>
+          <button style={S.backBtn} onClick={()=>setView("home")}>✕</button>
+          <div style={S.drillMeta}>
+            <span style={{...S.drillStage, color:COPPER}}>⚡ CUMULATIVE REVIEW</span>
+            <span style={S.drillCount}>{cardIdx+1} / {queue.length}</span>
+            <span style={S.remedBadge}>SINGLE PASS</span>
+          </div>
+          <div style={S.drillScore}>{sessionScore.correct}/{sessionScore.total}</div>
+        </div>
+        <div style={S.progressBar}><div style={{...S.progressFill,width:`${pct}%`}}/></div>
+        <div style={S.drillBody}>
+          <div style={{...S.cardWrap, border:`1px solid ${COPPER}55`}}>
+            <div style={S.cardPromptLabel}>WRITE IN SWAHILI</div>
+            <div style={S.cardPrompt}>{card.en}</div>
+          </div>
+          <div style={S.writtenArea}>
+            <input ref={inputRef} autoComplete="off" autoCorrect="off" spellCheck="false"
+              placeholder="Type your answer..."
+              style={{...S.writtenInput,...(feedback==="wrong"?S.inputWrong:feedback?S.inputRight:{})}}
+              value={typedAnswer}
+              onChange={e=>{setTypedAnswer(e.target.value);setFeedback(null);}}
+              onKeyDown={e=>{if(e.key==="Enter"&&!feedback)submitCumulative();}}
+            />
+            {!feedback && <button style={S.submitBtn} onClick={submitCumulative}>Submit</button>}
+            {feedback && (
+              <div style={S.writtenFeedback}>
+                {feedback==="exact" && <span style={S.fbExact}>✓ Exact</span>}
+                {feedback==="close" && <span style={S.fbClose}>≈ Close — check: <em>{card.sw}</em></span>}
+                {feedback==="wrong" && <span style={S.fbWrong}>✗ Correct: <em>{card.sw}</em></span>}
+                <button style={S.nextBtn} onClick={()=>nextCumulativeCard(feedback!=="wrong")}>Next →</button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── CUMULATIVE RESULTS ───────────────────────────────────────────────────
+
+  if (view === "cumulativeResults" && cumulativeReview) {
+    const score = sessionScore.correct/sessionScore.total;
+    const passed = score >= PASS_THRESHOLD;
+    const afterFrameIdx = cumulativeReview.afterFrameIdx;
+    const nextFrame = FRAMES[afterFrameIdx+1];
+
+    return (
+      <div style={S.root}>
+        <div style={S.resultsWrap}>
+          <div style={S.resultsBig}>{Math.round(score*100)}%</div>
+          <div style={S.resultsLabel}>Cumulative Review — Frames 1–{afterFrameIdx+1}</div>
+          <div style={{...S.resultsVerdict, color:passed?COPPER:RED_FG}}>
+            {passed ? "✓ REVIEW PASSED — FRAME UNLOCKED" : "✗ REVIEW FAILED — RETRY REQUIRED"}
+          </div>
+          <div style={S.resultsSub}>{sessionScore.correct} correct of {sessionScore.total} cards</div>
+
+          {!passed && (
+            <div style={S.resultsAdvice}>
+              You need 85% to unlock Frame {afterFrameIdx+2}. Review the missed cards below and retry.
+            </div>
+          )}
+
+          {missedCards.length>0 && (
+            <div style={S.missedList}>
+              <div style={S.missedTitle}>MISSED CARDS — GO BACK AND DRILL THESE FRAMES</div>
+              {missedCards.map((c,i)=>(
+                <div key={i} style={S.missedItem}>
+                  <span style={S.missedEn}>{c.en}</span>
+                  <span style={S.missedSw}>{c.sw}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div style={S.resultsBtns}>
+            <button style={S.retryBtn} onClick={()=>startCumulativeReview(afterFrameIdx)}>↺ Retry Review</button>
+            {passed && nextFrame && (
+              <button style={S.advanceBtn} onClick={()=>{setActiveFrame(nextFrame);setActiveStage(0);setView("explain");}}>
+                Frame {afterFrameIdx+2}: {nextFrame.title} →
+              </button>
+            )}
             <button style={S.homeBtn} onClick={()=>setView("home")}>⌂ Home</button>
           </div>
         </div>
