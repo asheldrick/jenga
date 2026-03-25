@@ -342,7 +342,23 @@ export default function App() {
 
   function startStage(frame, stageIdx) {
     setActiveFrame(frame); setActiveStage(stageIdx);
-    const cards = shuffle(frame.cards);
+
+    let cards = shuffle(frame.cards);
+
+    // Test stage: inject 5 random cards from all previously passed frames
+    if (stageIdx === 3) {
+      const frameIdx = FRAMES.findIndex(f => f.id === frame.id);
+      const priorCards = [];
+      for (let i = 0; i < frameIdx; i++) {
+        const fp = getFrameProgress(FRAMES[i].id);
+        if (fp.passed) priorCards.push(...FRAMES[i].cards);
+      }
+      if (priorCards.length > 0) {
+        const bonus = shuffle(priorCards).slice(0, 5);
+        cards = shuffle([...cards, ...bonus]);
+      }
+    }
+
     setQueue(cards); setCardIdx(0);
     setFlipped(false); setSelected(null); setTypedAnswer(""); setFeedback(null);
     setSessionScore({correct:0, total:0}); setMissedCards([]); setRound(1);
