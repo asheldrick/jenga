@@ -1,8 +1,14 @@
 // ─── JENGA CARD DATA ─────────────────────────────────────────────────────────
-// 13 Tier 1 frames, 35-45 cards each
+// Tier 1: 13 frames — core tenses, negation, copula, locative, noun class
+// Tier 2: 6 frames — expressive range, fluency separators
 // Each card: { en: "English prompt", sw: "Swahili answer" }
 
 const FRAMES = [
+
+  // ══════════════════════════════════════════════════════════════════
+  // TIER 1
+  // ══════════════════════════════════════════════════════════════════
+
   {
     id:"frame1", title:"Present Tense", subtitle:"The -na- tense marker", tier:1,
     explanation:`The present tense uses **-na-** between the subject prefix and verb stem.\n\n**Structure: Subject prefix + na + verb stem**\n\n• ni- (I) → **nina**kula\n• u- (you sg) → **una**kula\n• a- (he/she) → **ana**kula\n• tu- (we) → **tuna**kula\n• m- (you pl) → **mna**kula\n• wa- (they) → **wana**kula\n\nCovers both "I eat" and "I am eating."`,
@@ -36,6 +42,7 @@ const FRAMES = [
       {en:"We are waiting for the rain",sw:"Tunasubiri mvua"},
     ]
   },
+
   {
     id:"frame2", title:"Past Tense", subtitle:"The -li- tense marker", tier:1,
     explanation:`The simple past uses **-li-** as the tense marker.\n\n**Structure: Subject prefix + li + verb stem**\n\n• nilikula — I ate\n• ulikula — you ate\n• alikula — he/she ate\n• tulikula — we ate\n• mlikula — you all ate\n• walikula — they ate`,
@@ -70,6 +77,7 @@ const FRAMES = [
       {en:"She washed the clothes",sw:"Aliosha nguo"},
     ]
   },
+
   {
     id:"frame3", title:"Future Tense", subtitle:"The -ta- tense marker", tier:1,
     explanation:`The future tense uses **-ta-** as the tense marker.\n\n**Structure: Subject prefix + ta + verb stem**\n\n• nitakula — I will eat\n• utakula — you will eat\n• atakula — he/she will eat\n• tutakula — we will eat\n• mtakula — you all will eat\n• watakula — they will eat`,
@@ -104,9 +112,10 @@ const FRAMES = [
       {en:"They will build a house",sw:"Watajenga nyumba"},
     ]
   },
+
   {
     id:"frame4", title:"Negation", subtitle:"The ha- prefix family across tenses", tier:1,
-    explanation:`**Negative subject prefixes:**\n• si- (I) • hu- (you sg) • ha- (he/she) • hatu- (we) • ham- (you pl) • hawa- (they)\n\n**By tense:**\n• Present: *Sili nyama* (I don't eat meat)\n• Past: *si + ku + verb* → *Sikula* (I didn't eat)\n• Future: *Sitakula* (I will not eat)`,
+    explanation:`**Negative subject prefixes:**\n• si- (I) • hu- (you sg) • ha- (he/she) • hatu- (we) • ham- (you pl) • hawa- (they)\n\n**By tense:**\n• Present: *Sili nyama* — no -ku- even for monosyllabic stems (negative present is a distinct conjugation, do not derive from positive)\n• Past: *si + ku + verb* → *Sikula* (I didn't eat), *Sikulala* (I didn't sleep)\n• Future: *Sitakula* (I will not eat), *Hatutaenda* (We will not go)`,
     cards:[
       {en:"I don't eat meat",sw:"Sili nyama"},{en:"I don't drink alcohol",sw:"Sinywi pombe"},
       {en:"I don't sleep during the day",sw:"Silali mchana"},{en:"I don't work on Sundays",sw:"Sifanyi kazi Jumapili"},
@@ -114,8 +123,10 @@ const FRAMES = [
       {en:"You don't work",sw:"Hufanyi kazi"},{en:"He doesn't eat meat",sw:"Hali nyama"},
       {en:"She doesn't cook",sw:"Hapiki"},{en:"He doesn't sleep well",sw:"Halali vizuri"},
       {en:"We don't eat late",sw:"Hatuli usiku"},{en:"They don't work here",sw:"Hawafanyi kazi hapa"},
-      {en:"They don't speak Swahili",sw:"Hawasemi Kiswahili"},{en:"I didn't eat",sw:"Sikula"},
-      {en:"I didn't sleep",sw:"Sililala"},{en:"I didn't go to the market",sw:"Sikuenda sokoni"},
+      {en:"They don't speak Swahili",sw:"Hawasemi Kiswahili"},
+      {en:"I didn't eat",sw:"Sikula"},
+      {en:"I didn't sleep",sw:"Sikulala"},
+      {en:"I didn't go to the market",sw:"Sikuenda sokoni"},
       {en:"I didn't work yesterday",sw:"Sikufanya kazi jana"},{en:"I didn't cook",sw:"Sikupika"},
       {en:"You didn't eat",sw:"Hukula"},{en:"You didn't come",sw:"Hukuja"},
       {en:"He didn't eat",sw:"Hakula"},{en:"She didn't cook",sw:"Hakupika"},
@@ -125,7 +136,8 @@ const FRAMES = [
       {en:"I will not eat",sw:"Sitakula"},{en:"I will not go",sw:"Sitaenda"},
       {en:"I will not work tomorrow",sw:"Sitafanya kazi kesho"},{en:"I will not sleep early",sw:"Sitalala mapema"},
       {en:"You will not eat",sw:"Hutakula"},{en:"He will not come",sw:"Hatakuja"},
-      {en:"She will not cook",sw:"Hatapika"},{en:"We will not go",sw:"Hatuendi"},
+      {en:"She will not cook",sw:"Hatapika"},
+      {en:"We will not go",sw:"Hatutaenda"},
       {en:"They will not work",sw:"Hawatafanya kazi"},{en:"They will not come back",sw:"Hawatarudi"},
       {en:"I didn't find the road",sw:"Sikupata njia"},
       {en:"She didn't come to work today",sw:"Hakuja kazini leo"},
@@ -135,6 +147,7 @@ const FRAMES = [
       {en:"I will not eat there",sw:"Sitakula huko"},
     ]
   },
+
   {
     id:"frame5", title:"Copula", subtitle:"ni (is/are) and si (is not/are not)", tier:1,
     explanation:`**ni** = is/am/are &nbsp;&nbsp; **si** = is not/am not/are not\n\nNeither changes for person or number.\n\n• *Yeye ni daktari* — He is a doctor\n• *Hii ni kweli* — This is true\n• *Yeye si mwizi* — He is not a thief\n\n**Past/future to be:** *alikuwa* (was) / *atakuwa* (will be)`,
@@ -165,24 +178,26 @@ const FRAMES = [
       {en:"Food is important",sw:"Chakula ni muhimu"},
     ]
   },
+
   {
-    id:"frame6", title:"Locative Copula", subtitle:"yuko / yipo / yiko — expressing location", tier:1,
-    explanation:`To express **where** someone/something is, use locative copulas — not *ni*.\n\n**For people:** *yuko* (sg) / *wako* (pl)\n**Negative:** *hayuko* / *hawako*\n**Past:** *alikuwa* / *walikuwa* + location\n\n**Object locatives by class:**\n• N-class: *ipo/haipo*\n• Ki-Vi: *kiko/hakiko*\n• Common: *Yuko wapi?* — Where is he?`,
+    id:"frame6", title:"Locative Copula", subtitle:"yuko / yipo / yimo — expressing location", tier:1,
+    explanation:`To express **where** someone/something is, use locative copulas — not *ni*.\n\n**Three locative suffixes:**\n• **-ko** — general/indefinite location. Use for open questions (*wapi?*) and vague whereabouts.\n• **-po** — specific/definite location. Use when pinned to a known place.\n• **-mo** — interior. Use when something is physically inside/contained.\n\n**For people (M-Wa):** *yuko* (sg) / *wako* (pl)\n**Negative:** *hayuko* / *hawako*\n**Past/future:** *alikuwa / atakuwa* + location (-ko/-po/-mo are present only)`,
     cards:[
       {en:"Where is he?",sw:"Yuko wapi?"},{en:"He is at home",sw:"Yuko nyumbani"},
       {en:"She is at the market",sw:"Yuko sokoni"},{en:"He is at work",sw:"Yuko kazini"},
       {en:"She is at the hospital",sw:"Yuko hospitalini"},{en:"He is here",sw:"Yuko hapa"},
       {en:"She is there",sw:"Yuko pale"},{en:"He is in Nairobi",sw:"Yuko Nairobi"},
-      {en:"She is in the house",sw:"Yuko ndani ya nyumba"},{en:"He is outside",sw:"Yuko nje"},
+      {en:"She is inside the house",sw:"Yuko ndani ya nyumba"},{en:"He is outside",sw:"Yuko nje"},
       {en:"Where are they?",sw:"Wako wapi?"},{en:"They are at school",sw:"Wako shuleni"},
       {en:"They are at home",sw:"Wako nyumbani"},{en:"They are in the field",sw:"Wako shambani"},
       {en:"They are at the market",sw:"Wako sokoni"},{en:"The children are outside",sw:"Watoto wako nje"},
       {en:"My father is at the farm",sw:"Baba yangu yuko shambani"},
       {en:"The doctor is at the hospital",sw:"Daktari yuko hospitalini"},
       {en:"Where is the food?",sw:"Chakula kiko wapi?"},{en:"The food is on the table",sw:"Chakula kiko mezani"},
-      {en:"Where is the water?",sw:"Maji yako wapi?"},{en:"The water is in the pot",sw:"Maji yako sufuriani"},
+      {en:"Where is the water?",sw:"Maji yako wapi?"},{en:"The water is inside the pot",sw:"Maji yamo sufuriani"},
       {en:"Where is the book?",sw:"Kitabu kiko wapi?"},{en:"The book is on the table",sw:"Kitabu kiko mezani"},
-      {en:"Where is the house?",sw:"Nyumba ipo wapi?"},{en:"The house is near the road",sw:"Nyumba ipo karibu na barabara"},
+      {en:"Where is the house?",sw:"Nyumba iko wapi?"},
+      {en:"The house is near the road",sw:"Nyumba ipo karibu na barabara"},
       {en:"He is not at home",sw:"Hayuko nyumbani"},{en:"She is not here",sw:"Hayuko hapa"},
       {en:"They are not at school",sw:"Hawako shuleni"},{en:"The food is not on the table",sw:"Chakula hakiko mezani"},
       {en:"He was at home",sw:"Alikuwa nyumbani"},{en:"She was at the market",sw:"Alikuwa sokoni"},
@@ -193,6 +208,7 @@ const FRAMES = [
       {en:"The road is far from here",sw:"Njia iko mbali na hapa"},{en:"The children are not here",sw:"Watoto hawako hapa"},
     ]
   },
+
   {
     id:"frame7", title:"Perfect Tense", subtitle:"The -me- marker — completed action with present relevance", tier:1,
     explanation:`The perfect tense uses **-me-** for actions **completed but still relevant now**.\n\n• nimekula — I have eaten (and am full)\n• umekula — you have eaten\n• amekula — he/she has eaten\n• tumekula — we have eaten\n• wamekula — they have eaten\n\n**Key distinction:**\n• *Nilikula* — I ate (simple past fact)\n• *Nimekula* — I have eaten (still relevant now)`,
@@ -225,9 +241,10 @@ const FRAMES = [
       {en:"I have met him before",sw:"Nimekutana naye kabla"},
     ]
   },
+
   {
     id:"frame8", title:"Negative Perfect", subtitle:"The -ja- marker — not yet", tier:1,
-    explanation:`The negative perfect uses **-ja-** — "have not yet."\n\n• sijakula — I have not yet eaten\n• hujakula — you have not yet eaten\n• hajakula — he/she has not yet eaten\n• hatujakula — we have not yet eaten\n• hawajakula — they have not yet eaten\n\nThe "yet" is built in. *Sijakula bado* adds emphasis but *bado* is optional.`,
+    explanation:`The negative perfect uses **-ja-** — "have not yet."\n\n• sijakula — I have not yet eaten\n• hujakula — you have not yet eaten\n• hajakula — he/she has not yet eaten\n• hatujakula — we have not yet eaten\n• hawajakula — they have not yet eaten\n\n**Structure: ha + [subject concord] + ja + verb stem**\n\nThe "yet" is built in. *Bado* at the end adds emphasis only.\n\n**kuja forms: always use full form with -ku-**\n*hajakuja* (not *hajaja*), *hujakuja*, *hawajakuja*`,
     cards:[
       {en:"I have not yet eaten",sw:"Sijakula"},{en:"I have not yet arrived",sw:"Sijafika"},
       {en:"I have not yet finished",sw:"Sijamaliza"},{en:"I have not yet slept",sw:"Sijalala"},
@@ -235,8 +252,10 @@ const FRAMES = [
       {en:"I have not yet gone",sw:"Sijaenda"},{en:"I have not yet understood",sw:"Sijaelewa"},
       {en:"I have not yet come back",sw:"Sijarudi"},{en:"I have not yet bought food",sw:"Sijanunua chakula"},
       {en:"You have not yet eaten",sw:"Hujakula"},{en:"You have not yet finished",sw:"Hujamaliza"},
-      {en:"You have not yet arrived",sw:"Hujafika"},{en:"He has not yet eaten",sw:"Hajakula"},
-      {en:"She has not yet come",sw:"Hajaja"},{en:"He has not yet finished work",sw:"Hajamaliza kazi"},
+      {en:"You have not yet arrived",sw:"Hujafika"},
+      {en:"He has not yet eaten",sw:"Hajakula"},
+      {en:"She has not yet come",sw:"Hajakuja"},
+      {en:"He has not yet finished work",sw:"Hajamaliza kazi"},
       {en:"She has not yet arrived",sw:"Hajafika"},{en:"He has not yet understood",sw:"Hajaelewa"},
       {en:"She has not yet cooked",sw:"Hajapika"},{en:"He has not yet gone",sw:"Hajaenda"},
       {en:"We have not yet eaten",sw:"Hatujakula"},{en:"We have not yet finished",sw:"Hatujamaliza"},
@@ -259,6 +278,7 @@ const FRAMES = [
       {en:"He has not yet come back from Nairobi",sw:"Hajarudi Nairobi"},
     ]
   },
+
   {
     id:"frame9", title:"Habitual Tense", subtitle:"The hu- marker — things that usually happen", tier:1,
     explanation:`The habitual tense uses **hu-** for habits, customs, and general truths.\n\n**Structure: hu + verb stem (NO subject prefix)**\n\n• *Hukula wali* — He usually eats rice\n• *Husema* — People say / He usually says\n• *Hunyesha* — It usually rains\n\nFor explicit subjects: *Yeye hukula nyama* — He usually eats meat`,
@@ -298,6 +318,7 @@ const FRAMES = [
       {en:"It usually rains heavily in the mountains",sw:"Mvua hunyesha sana milimani"},
     ]
   },
+
   {
     id:"frame10", title:"Infinitive Complement", subtitle:"ku- + verb — wanting, needing, being able to", tier:1,
     explanation:`When one verb follows another, the second takes the **infinitive: ku- + verb stem**.\n\n• *-taka* → *Nataka kukimbia* — I want to run\n• *-penda* → *Napenda kukula* — I like to eat\n• *-weza* → *Naweza kusema* — I can speak\n• *-lazimika* → *Ninalazimika kwenda* — I must go\n• *-jaribu* → *Najaribu kujifunza* — I'm trying to learn`,
@@ -334,6 +355,7 @@ const FRAMES = [
       {en:"I am happy to help",sw:"Nafurahi kusaidia"},
     ]
   },
+
   {
     id:"frame11", title:"Have / With Construction", subtitle:"nina / ana / tuna — possessing and accompanying", tier:1,
     explanation:`"To have" uses **-na-** with subject prefix — no separate verb needed.\n\n• *Nina pesa* — I have money\n• *Ana nyumba* — He has a house\n• *Tuna shida* — We have a problem\n\n**Negative:** *Sina pesa* / *Hana chakula* / *Hatuna maji*\n**Past:** *Nilikuwa na pesa* — I had money\n**Accompaniment:** *Alikuja na rafiki yake* — He came with his friend`,
@@ -366,6 +388,7 @@ const FRAMES = [
       {en:"He has no shame",sw:"Hana aibu"},
     ]
   },
+
   {
     id:"frame12", title:"Greetings & Social Rituals", subtitle:"Essential upcountry Kenya greeting culture", tier:1,
     explanation:`In upcountry Kenya, greetings are **social obligations**, not pleasantries. Skipping them signals rudeness.\n\n• *Hujambo* → *Sijambo* (hello / I'm fine)\n• *Habari?* → *Nzuri / Salama / Poa*\n• *Shikamoo* → *Marahaba* (respectful, to elders)\n• *Habari za asubuhi/mchana/jioni* (morning/afternoon/evening)\n• *Kwaheri* — Goodbye`,
@@ -394,6 +417,7 @@ const FRAMES = [
       {en:"God willing / Hopefully",sw:"Inshallah"},
     ]
   },
+
   {
     id:"frame13", title:"M-Wa Noun Class Agreement", subtitle:"The human/animate class — most important class", tier:1,
     explanation:`M-Wa class covers **people and animals** — the most critical class.\n\n**Singular (M-):** mtu, mtoto, mwalimu, mkulima, mzee, mgeni\n**Plural (Wa-):** watu, watoto, walimu, wakulima, wazee, wageni\n\n**Agreement:**\n• Subject prefix: *a-* (sg) / *wa-* (pl)\n• Adjective: *m-* (sg) / *wa-* (pl)\n• Example: *Mtoto mzuri anakuja / Watoto wazuri wanakuja*`,
@@ -432,7 +456,274 @@ const FRAMES = [
       {en:"A new person arrived",sw:"Mtu mpya alifika"},
       {en:"New people arrived",sw:"Watu wapya walifika"},
     ]
-  }
+  },
+
+  // ══════════════════════════════════════════════════════════════════
+  // TIER 2 — EXPRESSIVE RANGE
+  // These separate basic survival Swahili from genuine fluency.
+  // ══════════════════════════════════════════════════════════════════
+
+  {
+    id:"frame14", title:"Temporal Relative", subtitle:"-napo-, -liapo-, -takapo- — when clauses", tier:2,
+    explanation:`Temporal relatives express **"when"** — linking a time clause to a main clause.\n\n**Structure: subject prefix + tense + po + verb stem**\n\n• **-napo-** (present/habitual): *Ninapoamka, ninakimbia* — When I wake up, I run\n• **-liapo-** (past): *Nilipofika, alikuwa analala* — When I arrived, he was asleep\n• **-takapo-** (future): *Utakapofika, nipigie simu* — When you arrive, call me\n\nNote: *-po-* here is a temporal relativiser meaning "at which time" — distinct from the locative *-po*.`,
+    cards:[
+      {en:"When I wake up, I run",sw:"Ninapoamka, ninakimbia"},
+      {en:"When I eat, I drink water",sw:"Ninapokula, ninakunywa maji"},
+      {en:"When it rains, I stay home",sw:"Inaponyesha, nakaa nyumbani"},
+      {en:"When he arrives, tell me",sw:"Anapofika, niambie"},
+      {en:"When she cooks, the house smells good",sw:"Anapopika, nyumba inanuka vizuri"},
+      {en:"When we work together, it goes faster",sw:"Tunapofanya kazi pamoja, inaenda haraka"},
+      {en:"When I am hungry, I become irritable",sw:"Ninapokuwa na njaa, ninakuwa na hasira"},
+      {en:"When he is tired, he sleeps early",sw:"Anapochoka, analala mapema"},
+      {en:"When it is cold, people stay inside",sw:"Inapokuwa baridi, watu wanakaa ndani"},
+      {en:"When I arrived, he was sleeping",sw:"Nilipofika, alikuwa analala"},
+      {en:"When she came, we were eating",sw:"Alipokuja, tulikuwa tunakula"},
+      {en:"When the rain fell, we ran inside",sw:"Mvua iliponyesha, tulikimbia ndani"},
+      {en:"When I called, he didn't answer",sw:"Nilipopiga simu, hakujibu"},
+      {en:"When we finished, we went home",sw:"Tulipokwisha, tulienda nyumbani"},
+      {en:"When I was young, I lived in Kenya",sw:"Nilipokuwa mdogo, niliishi Kenya"},
+      {en:"When they arrived, the food was finished",sw:"Walipofika, chakula kilikwisha"},
+      {en:"When I left, it was raining",sw:"Nilipoondoka, ilikuwa inanyesha"},
+      {en:"When she spoke, everyone was quiet",sw:"Alipozungumza, kila mtu alikuwa kimya"},
+      {en:"When he saw me, he smiled",sw:"Aliponiona, alitabasamu"},
+      {en:"When you arrive, call me",sw:"Utakapofika, nipigie simu"},
+      {en:"When he comes, we will eat",sw:"Atakapokuja, tutakula"},
+      {en:"When it stops raining, we will go",sw:"Itakapoacha kunyesha, tutaenda"},
+      {en:"When I finish work, I will rest",sw:"Nitakapomaliza kazi, nitapumzika"},
+      {en:"When you understand, you will be able to speak",sw:"Utakapoelewa, utaweza kusema"},
+      {en:"When we get there, we will look for food",sw:"Tutakapofika, tutatafuta chakula"},
+      {en:"When she wakes up, give her tea",sw:"Atakapоamka, mpe chai"},
+      {en:"When I have money, I will buy a car",sw:"Nitakapokuwa na pesa, nitanunua gari"},
+      {en:"When he finishes school, he will work",sw:"Atakapomaliza shule, atafanya kazi"},
+      {en:"When I eat ugali, I feel satisfied",sw:"Ninapokula ugali, ninajisikia shibe"},
+      {en:"When the sun rises, the birds sing",sw:"Jua linapochomoza, ndege wanaimba"},
+      {en:"When I travel, I speak Swahili",sw:"Ninaposafiri, nasema Kiswahili"},
+      {en:"When the market opens, people come",sw:"Soko linapofungua, watu wanakuja"},
+      {en:"When she is sick, she doesn't eat",sw:"Anapokuwa mgonjwa, hali"},
+      {en:"When we pray, we feel peace",sw:"Tunapoombа, tunahisi amani"},
+      {en:"When the children come home, feed them",sw:"Watoto watakaporudi, walishe"},
+    ]
+  },
+
+  {
+    id:"frame15", title:"Conditional", subtitle:"-nge- and -ngeli- — if/would constructions", tier:2,
+    explanation:`Conditionals express "if / would" — hypothetical or contrary-to-fact situations.\n\n**-nge-** (present/open conditional): *Ningekula* — I would eat\n**-ngeli-** (past counterfactual): *Ningelikula* — I would have eaten (but didn't)\n\n**Structure: subject prefix + nge/ngeli + verb stem**\n\n• *Kama ningekuwa na pesa...* — If I had money...\n• *Kama ningelikuwa na pesa...* — If I had had money...\n\n*Kama* (if) introduces the condition clause.`,
+    cards:[
+      {en:"I would eat",sw:"Ningekula"},
+      {en:"I would come",sw:"Ningekuja"},
+      {en:"I would sleep",sw:"Ningelala"},
+      {en:"I would go",sw:"Ningeenda"},
+      {en:"I would work",sw:"Ningefanya kazi"},
+      {en:"I would speak Swahili",sw:"Ningesema Kiswahili"},
+      {en:"I would help you",sw:"Ningekusaidia"},
+      {en:"I would like to go",sw:"Ningependa kwenda"},
+      {en:"I would like to eat",sw:"Ningependa kula"},
+      {en:"He would eat",sw:"Angekula"},
+      {en:"She would come",sw:"Angekuja"},
+      {en:"He would like to help",sw:"Angependa kusaidia"},
+      {en:"We would go",sw:"Tungeenda"},
+      {en:"They would work",sw:"Wangefanya kazi"},
+      {en:"If I had money, I would buy food",sw:"Kama ningekuwa na pesa, ningenunua chakula"},
+      {en:"If it rained, we would stay home",sw:"Kama ingenya, tungekaa nyumbani"},
+      {en:"If he came, I would be happy",sw:"Kama angekuja, ningefurahi"},
+      {en:"If you worked hard, you would succeed",sw:"Kama ungefanya kazi kwa bidii, ungefanikiwa"},
+      {en:"If we left now, we would arrive in time",sw:"Kama tungeondoka sasa, tungefika kwa wakati"},
+      {en:"If she knew, she would tell us",sw:"Kama angejua, angetuambia"},
+      {en:"If they came, we would cook for them",sw:"Kama wangekuja, tungepikia"},
+      {en:"If I were there, I would help",sw:"Kama ningekuwepo, ningesaidia"},
+      {en:"I would have eaten",sw:"Ningelikula"},
+      {en:"I would have come",sw:"Ningelikuja"},
+      {en:"I would have gone",sw:"Ningelienda"},
+      {en:"He would have eaten",sw:"Angelikula"},
+      {en:"She would have come",sw:"Angelikuja"},
+      {en:"We would have gone",sw:"Tungelienda"},
+      {en:"They would have worked",sw:"Wangelifanya kazi"},
+      {en:"If I had had money, I would have bought food",sw:"Kama ningelikuwa na pesa, ningelinunua chakula"},
+      {en:"If it had rained, we would have stayed home",sw:"Kama ingelinya, tungelikaa nyumbani"},
+      {en:"If he had come, I would have been happy",sw:"Kama angelikuja, ningelifurahi"},
+      {en:"If you had told me, I would have helped",sw:"Kama ungeliniambia, ningelisaidia"},
+      {en:"If she had known, she would have told us",sw:"Kama angelijua, angelituambia"},
+      {en:"If we had left earlier, we would have arrived",sw:"Kama tungeliondoka mapema, tungelifika"},
+    ]
+  },
+
+  {
+    id:"frame16", title:"Object Infix", subtitle:"Embedding the object inside the verb", tier:2,
+    explanation:`Swahili embeds the object directly into the verb using an **object infix**.\n\n**Position: subject prefix + tense + OBJECT INFIX + verb stem**\n\n**M-Wa class object infixes:**\n• -ni- (me) • -ku- (you sg) • -m-/-mw- (him/her) • -tu- (us) • -wa- (them pl)\n\n**Examples:**\n• *Ninakupenda* — I love you\n• *Ameniona* — He has seen me\n• *Nitamwambia* — I will tell him\n• *Nimewaona* — I have seen them\n\nObject infixes for other noun classes match their subject concord prefix.`,
+    cards:[
+      {en:"I love you",sw:"Ninakupenda"},
+      {en:"I see you",sw:"Ninakuona"},
+      {en:"I hear you",sw:"Ninakusikia"},
+      {en:"I will help you",sw:"Nitakusaidia"},
+      {en:"I will tell you",sw:"Nitakuambia"},
+      {en:"I have seen you",sw:"Nimekuona"},
+      {en:"I called you",sw:"Nilikupigia simu"},
+      {en:"I am waiting for you",sw:"Ninakusubiri"},
+      {en:"I miss you",sw:"Ninakukosa"},
+      {en:"I love him",sw:"Ninampenda"},
+      {en:"I see her",sw:"Ninamona"},
+      {en:"I will tell him",sw:"Nitamwambia"},
+      {en:"I have seen her",sw:"Nimemona"},
+      {en:"I will help her",sw:"Nitamsaidia"},
+      {en:"He called me",sw:"Alinipigia simu"},
+      {en:"She sees me",sw:"Ananiona"},
+      {en:"He told me",sw:"Aliniambia"},
+      {en:"She helped me",sw:"Alinisaidia"},
+      {en:"They have seen me",sw:"Wameniona"},
+      {en:"He loves us",sw:"Anatupenda"},
+      {en:"She will help us",sw:"Atatusaidia"},
+      {en:"He told us",sw:"Alituambia"},
+      {en:"I have seen them",sw:"Nimewaona"},
+      {en:"I will tell them",sw:"Nitawaambwa"},
+      {en:"He loves them",sw:"Anawapenda"},
+      {en:"Do you see me?",sw:"Unaniona?"},
+      {en:"He has not yet seen me",sw:"Hajaniona"},
+      {en:"I don't know you",sw:"Sikujui"},
+      {en:"I found it (the book — Ki class)",sw:"Nimekipata"},
+      {en:"I have eaten it (the food — Ki class)",sw:"Nimekila"},
+      {en:"He told me the news",sw:"Aliniambia habari"},
+      {en:"She gave me food",sw:"Alinipatia chakula"},
+      {en:"I will bring it to you",sw:"Nitakuletea"},
+      {en:"They are waiting for us",sw:"Wanatusubiri"},
+      {en:"She hasn't seen him yet",sw:"Hajamwona"},
+    ]
+  },
+
+  {
+    id:"frame17", title:"-amba- Relative Clause", subtitle:"Describing nouns with who / which / that", tier:2,
+    explanation:`The *amba-* relative clause uses **amba-** + subject concord suffix to describe a noun.\n\n**Structure: NOUN + amba[concord] + verb**\n\n**M-Wa concord suffixes after amba-:**\n• Sg: *ambaye* — Mtu ambaye anakuja (the person who is coming)\n• Pl: *ambao* — Watu ambao wanafanya kazi (people who work)\n\n**Other classes:**\n• Ki-Vi sg: *ambacho* — Kitabu ambacho ninasoma\n• N-class sg: *ambayo* — Nyumba ambayo ilijengwa\n• MA-class pl: *ambayo* — Maji ambayo yamo sufuriani\n• Place: *ambapo* — Mahali ambapo napenda\n\n*amba-* clauses work across all tenses.`,
+    cards:[
+      {en:"The person who is coming",sw:"Mtu ambaye anakuja"},
+      {en:"The person who came",sw:"Mtu ambaye alikuja"},
+      {en:"The person who will come",sw:"Mtu ambaye atakuja"},
+      {en:"The people who are working",sw:"Watu ambao wanafanya kazi"},
+      {en:"The people who came",sw:"Watu ambao walikuja"},
+      {en:"The child who is eating",sw:"Mtoto ambaye anakula"},
+      {en:"The children who are playing",sw:"Watoto ambao wanacheza"},
+      {en:"The teacher who speaks Swahili",sw:"Mwalimu ambaye anasema Kiswahili"},
+      {en:"The man who went to the market",sw:"Mwanaume ambaye alienda sokoni"},
+      {en:"The woman who cooked the food",sw:"Mwanamke ambaye alipika chakula"},
+      {en:"The friend who helped me",sw:"Rafiki ambaye alinisaidia"},
+      {en:"The doctor who treated him",sw:"Daktari ambaye alimtibu"},
+      {en:"The book which is on the table",sw:"Kitabu ambacho kiko mezani"},
+      {en:"The book which I am reading",sw:"Kitabu ambacho ninasoma"},
+      {en:"The food which was cooked",sw:"Chakula ambacho kilipikwa"},
+      {en:"The food which I ate",sw:"Chakula ambacho nilikula"},
+      {en:"The house which is near the road",sw:"Nyumba ambayo ipo karibu na barabara"},
+      {en:"The house which we built",sw:"Nyumba ambayo tulijenga"},
+      {en:"The road which goes to Nairobi",sw:"Njia ambayo inaenda Nairobi"},
+      {en:"The water which is in the pot",sw:"Maji ambayo yamo sufuriani"},
+      {en:"The news which I heard",sw:"Habari ambazo nilisikia"},
+      {en:"The things which I bought",sw:"Vitu ambavyo nilinunua"},
+      {en:"The trees which are tall",sw:"Miti ambayo ni mirefu"},
+      {en:"The man who has money",sw:"Mwanaume ambaye ana pesa"},
+      {en:"The child who is sick",sw:"Mtoto ambaye ni mgonjwa"},
+      {en:"The person who doesn't know",sw:"Mtu ambaye hajui"},
+      {en:"The people who have not yet come",sw:"Watu ambao hawajaja"},
+      {en:"The food which is not yet cooked",sw:"Chakula ambacho hakijapikwa"},
+      {en:"The friend who called me",sw:"Rafiki ambaye alinipigia simu"},
+      {en:"The teacher who taught us",sw:"Mwalimu ambaye alitufundisha"},
+      {en:"The place which I love",sw:"Mahali ambapo napenda"},
+      {en:"The problem which we have",sw:"Tatizo ambalo tuna"},
+      {en:"The reason why I came",sw:"Sababu ambayo nilikuja"},
+      {en:"The person who helped you",sw:"Mtu ambaye alikusaidia"},
+      {en:"The child who was born here",sw:"Mtoto ambaye alizaliwa hapa"},
+    ]
+  },
+
+  {
+    id:"frame18", title:"Noun Class Agreement — M-Mi / Ki-Vi / N", subtitle:"Adjective and verb agreement beyond M-Wa", tier:2,
+    explanation:`Every noun class requires matching **subject concord** and **adjective prefix**.\n\n**M-Mi class** (trees, plants, rivers, fire):\n• Sg *u-*: *Mti mrefu* / *Unaanguka*\n• Pl *i-*: *Miti mirefu* / *Inaanguka*\n\n**Ki-Vi class** (things, languages, body parts, food):\n• Sg *ki-*: *Kiti kizuri* / *Kinaanguka*\n• Pl *vi-*: *Viti vizuri* / *Vinaanguka*\n\n**N-class** (animals, loanwords, many common nouns):\n• Sg *i-*: *Nyumba nzuri* / *Ilianguka*\n• Pl *zi-*: *Nyumba nzuri* / *Zilianguka*\n\n**MA-class** (liquids, collectives, augmentatives):\n• Sg *li-*: *Tunda zuri* / *Lilianguka*\n• Pl *ya-*: *Matunda mazuri* / *Yalianguka*`,
+    cards:[
+      // M-Mi class
+      {en:"A tall tree",sw:"Mti mrefu"},
+      {en:"Tall trees",sw:"Miti mirefu"},
+      {en:"A big tree",sw:"Mti mkubwa"},
+      {en:"Big trees",sw:"Miti mikubwa"},
+      {en:"The tree is falling",sw:"Mti unaanguka"},
+      {en:"The trees are falling",sw:"Miti inaanguka"},
+      {en:"The tree fell",sw:"Mti ulianguka"},
+      {en:"The trees fell",sw:"Miti ilianguka"},
+      {en:"The river flows",sw:"Mto unatiririka"},
+      {en:"Big rivers",sw:"Mito mikubwa"},
+      {en:"A long river",sw:"Mto mrefu"},
+      {en:"The fire is burning",sw:"Moto unawaka"},
+      // Ki-Vi class
+      {en:"A good chair",sw:"Kiti kizuri"},
+      {en:"Good chairs",sw:"Viti vizuri"},
+      {en:"A small book",sw:"Kitabu kidogo"},
+      {en:"Small books",sw:"Vitabu vidogo"},
+      {en:"The chair broke",sw:"Kiti kilianguka"},
+      {en:"The chairs broke",sw:"Viti vilianguka"},
+      {en:"A new thing",sw:"Kitu kipya"},
+      {en:"New things",sw:"Vitu vipya"},
+      {en:"Swahili is a good language",sw:"Kiswahili ni lugha nzuri"},
+      {en:"The food is finished",sw:"Chakula kimeisha"},
+      {en:"The foods are finished",sw:"Vyakula vimeisha"},
+      {en:"A big pot",sw:"Sufuria kubwa"},
+      // N-class
+      {en:"A good house",sw:"Nyumba nzuri"},
+      {en:"The house fell",sw:"Nyumba ilianguka"},
+      {en:"The houses fell",sw:"Nyumba zilianguka"},
+      {en:"A big road",sw:"Barabara kubwa"},
+      {en:"A good cow",sw:"Ng'ombe mzuri"},
+      {en:"The rain has fallen",sw:"Mvua imenyesha"},
+      {en:"A long letter",sw:"Barua ndefu"},
+      {en:"Long letters",sw:"Barua ndefu"},
+      // MA-class
+      {en:"A ripe fruit",sw:"Tunda zuri"},
+      {en:"Ripe fruits",sw:"Matunda mazuri"},
+      {en:"The fruit fell",sw:"Tunda lilianguka"},
+      {en:"The fruits fell",sw:"Matunda yalianguka"},
+      {en:"A new car",sw:"Gari jipya"},
+      {en:"New cars",sw:"Magari mapya"},
+      {en:"The car broke down",sw:"Gari liliharibika"},
+      {en:"The cars broke down",sw:"Magari yaliharibika"},
+    ]
+  },
+
+  {
+    id:"frame19", title:"Passive Voice", subtitle:"The -w- suffix — action done to the subject", tier:2,
+    explanation:`The passive adds **-w-** before the final vowel of the verb stem.\n\nPhonological harmony rules:\n• Most verbs: *-wa* → *kupikwa, kusomwa, kujengwa*\n• Verbs ending in vowel: *-liwa* → *kuliwa* (to be eaten)\n• Arabic-origin verbs: *-iwa* → *kusaidiwa* (to be helped)\n\n**Active → Passive:**\n• *Alipika chakula* → *Chakula kilipikwa* (He cooked food → The food was cooked)\n\n**Agent introduced with *na*:**\n• *Chakula kilipikwa na mama* — The food was cooked by mother\n\nPassive works across all tenses — the subject concord matches the noun being acted upon.`,
+    cards:[
+      {en:"The food was cooked",sw:"Chakula kilipikwa"},
+      {en:"The food is being cooked",sw:"Chakula kinapikwa"},
+      {en:"The food has been cooked",sw:"Chakula kimepikwa"},
+      {en:"The food is not yet cooked",sw:"Chakula hakijapikwa"},
+      {en:"The food will be cooked",sw:"Chakula kitapikwa"},
+      {en:"The letter was read",sw:"Barua ilisomwa"},
+      {en:"The letter is being read",sw:"Barua inasomwa"},
+      {en:"The letter has been read",sw:"Barua imesomwa"},
+      {en:"The house was built",sw:"Nyumba ilijengwa"},
+      {en:"The house is being built",sw:"Nyumba inajengwa"},
+      {en:"The house has been built",sw:"Nyumba imejengwa"},
+      {en:"The house will be built",sw:"Nyumba itajengwa"},
+      {en:"The child was helped",sw:"Mtoto alisaidiwa"},
+      {en:"The clothes were washed",sw:"Nguo ziliosha"},
+      {en:"The clothes have been washed",sw:"Nguo zimeoshwa"},
+      {en:"The work is done",sw:"Kazi imefanywa"},
+      {en:"The food was cooked by mother",sw:"Chakula kilipikwa na mama"},
+      {en:"The letter was written by the teacher",sw:"Barua iliandikwa na mwalimu"},
+      {en:"The house was built by the workers",sw:"Nyumba ilijengwa na wafanyakazi"},
+      {en:"The child was helped by the doctor",sw:"Mtoto alisaidiwa na daktari"},
+      {en:"I was told the news",sw:"Niliambiwa habari"},
+      {en:"He was seen at the market",sw:"Alionekana sokoni"},
+      {en:"She was called",sw:"Aliitwa"},
+      {en:"We were helped",sw:"Tulisaidiwa"},
+      {en:"They were sent",sw:"Walitumwa"},
+      {en:"The door was opened",sw:"Mlango ulifunguliwa"},
+      {en:"The door has been closed",sw:"Mlango umefungwa"},
+      {en:"The water was brought",sw:"Maji yaliletwa"},
+      {en:"The road was found",sw:"Njia ilipatikana"},
+      {en:"The problem was solved",sw:"Tatizo lilitatuliwa"},
+      {en:"The children were fed",sw:"Watoto walilishwa"},
+      {en:"It is said that",sw:"Inasemwa kwamba"},
+      {en:"It is known that",sw:"Inajulikana kwamba"},
+      {en:"It is not allowed",sw:"Hairuhusiwi"},
+      {en:"The money was found",sw:"Pesa ilipatikana"},
+    ]
+  },
+
 ];
 
 export default FRAMES;
