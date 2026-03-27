@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import FRAMES from "./data/frames.js";
 import { supabase } from "./supabase.js";
+import SessionVocab from "./SessionVocab.jsx";
 import {
   PASS_THRESHOLD, STAGES, STAGE_LABELS, STAGE_ICONS,
   loadProgress, saveProgress,
@@ -31,6 +32,13 @@ const S = {
   ioBox: { background:PANEL, border:`1px solid ${PARCHMENT_DARK}`, borderRadius:5, padding:"0.75rem", marginBottom:"1rem" },
   ioBoxLabel: { fontSize:"0.75rem", color:INK_LIGHT, marginBottom:"0.5rem", lineHeight:1.5 },
   ioTextarea: { width:"100%", boxSizing:"border-box", background:PANEL2, border:`1px solid ${PARCHMENT_DARK}`, color:INK, borderRadius:4, padding:"0.5rem", fontSize:"0.72rem", fontFamily:"monospace", resize:"vertical", outline:"none" },
+
+  // ── TRACK SWITCHER ────────────────────────────────────────────────────────
+  trackRow:   { display:"flex", gap:"0.5rem", marginBottom:"1.25rem" },
+  trackBtn:   { flex:1, background:PANEL2, border:`1px solid ${PARCHMENT_DARK}`, color:INK_LIGHT, borderRadius:5, padding:"0.55rem", cursor:"pointer", fontSize:"0.78rem", fontFamily:"inherit", letterSpacing:"0.08em", textTransform:"uppercase", transition:"all 0.12s" },
+  trackBtnOn: { background:COPPER, color:PARCHMENT, border:`1px solid ${COPPER}`, fontWeight:"bold" },
+  trackLock:  { opacity:0.5, cursor:"default" },
+
   frameList: { display:"flex", flexDirection:"column", gap:"1rem" },
   frameCard: { background:PANEL, border:`1px solid ${PARCHMENT_DARK}`, borderRadius:6, padding:"1rem 1.2rem", boxShadow:"0 1px 4px rgba(0,0,0,0.08)" },
   frameTop: { display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:"0.75rem" },
@@ -143,6 +151,7 @@ export default function App() {
   const [authLoading, setAuthLoading]     = useState(true);
   const [syncMsg, setSyncMsg]             = useState("");
   const [progress, setProgress]           = useState(loadProgress);
+  const [track, setTrack]                 = useState("grammar"); // "grammar" | "session"
   const [view, setView]                   = useState("home");
   const [activeFrame, setActiveFrame]     = useState(null);
   const [activeStage, setActiveStage]     = useState(0);
@@ -159,7 +168,7 @@ export default function App() {
   const [showExportBox, setShowExportBox] = useState(false);
   const [showImportBox, setShowImportBox] = useState(false);
   const [importText, setImportText]       = useState("");
-  const [cumulativeReview, setCumulativeReview] = useState(null); // { afterFrame: 3, cards: [] }
+  const [cumulativeReview, setCumulativeReview] = useState(null);
   const inputRef  = useRef(null);
   const saveTimer = useRef(null);
 
@@ -192,7 +201,7 @@ export default function App() {
     setTimeout(() => setSyncMsg(""), 2500);
   }
 
-  // ── auto-save: local always, cloud debounced ──────────────────────────────
+  // ── auto-save ─────────────────────────────────────────────────────────────
 
   useEffect(() => {
     saveProgress(progress);
@@ -251,16 +260,13 @@ export default function App() {
     });
   }
 
-  // ── cumulative review helpers ─────────────────────────────────────────────
-  // Every 3 frames passed, a cumulative review gates the next frame.
-  // Stored in progress as { cumulative_3: { passed, score }, cumulative_6: ... }
-  // 20 cards drawn randomly from all frames passed so far, written-only, 85% gate.
+  // ── cumulative review ─────────────────────────────────────────────────────
 
-  const CUMULATIVE_EVERY = 3; // review required after every Nth frame
+  const CUMULATIVE_EVERY = 3;
   const CUMULATIVE_CARDS = 20;
 
   function getCumulativeKey(afterFrameIdx) {
-    return `cumulative_${afterFrameIdx + 1}`; // e.g. cumulative_3 after frame index 2
+    return `cumulative_${afterFrameIdx + 1}`;
   }
 
   function isCumulativePassed(afterFrameIdx) {
@@ -287,21 +293,16 @@ export default function App() {
     });
   }
 
-  // Is cumulative review required before unlocking frameIdx?
-  // Required if frameIdx is a multiple of CUMULATIVE_EVERY (0-indexed: frames 3,6,9,12)
   function cumulativeRequiredBefore(frameIdx) {
     return frameIdx > 0 && frameIdx % CUMULATIVE_EVERY === 0;
   }
 
-  // Is the cumulative review blocking this frame?
   function cumulativeBlocking(frameIdx) {
     if (!cumulativeRequiredBefore(frameIdx)) return false;
-    const afterFrameIdx = frameIdx - 1; // the last frame of the completed group
-    return !isCumulativePassed(afterFrameIdx);
+    return !isCumulativePassed(frameIdx - 1);
   }
 
   function buildCumulativeCards(upToFrameIdx) {
-    // Collect all cards from passed frames up to and including upToFrameIdx
     const allCards = [];
     for (let i = 0; i <= upToFrameIdx; i++) {
       const fp = getFrameProgress(FRAMES[i].id);
@@ -313,8 +314,7 @@ export default function App() {
   function startCumulativeReview(afterFrameIdx) {
     const cards = buildCumulativeCards(afterFrameIdx);
     setCumulativeReview({ afterFrameIdx, cards });
-    const shuffled = shuffle(cards);
-    setQueue(shuffled);
+    setQueue(shuffle(cards));
     setCardIdx(0);
     setFlipped(false); setSelected(null); setTypedAnswer(""); setFeedback(null);
     setSessionScore({correct:0, total:0}); setMissedCards([]); setRound(1);
@@ -342,10 +342,7 @@ export default function App() {
 
   function startStage(frame, stageIdx) {
     setActiveFrame(frame); setActiveStage(stageIdx);
-
     let cards = shuffle(frame.cards);
-
-    // Test stage: inject 5 random cards from all previously passed frames
     if (stageIdx === 3) {
       const frameIdx = FRAMES.findIndex(f => f.id === frame.id);
       const priorCards = [];
@@ -354,11 +351,9 @@ export default function App() {
         if (fp.passed) priorCards.push(...FRAMES[i].cards);
       }
       if (priorCards.length > 0) {
-        const bonus = shuffle(priorCards).slice(0, 5);
-        cards = shuffle([...cards, ...bonus]);
+        cards = shuffle([...cards, ...shuffle(priorCards).slice(0, 5)]);
       }
     }
-
     setQueue(cards); setCardIdx(0);
     setFlipped(false); setSelected(null); setTypedAnswer(""); setFeedback(null);
     setSessionScore({correct:0, total:0}); setMissedCards([]); setRound(1);
@@ -403,6 +398,15 @@ export default function App() {
     </div>
   );
 
+  // ─── SESSION VOCAB TRACK ──────────────────────────────────────────────────
+
+  if (track === "session") return (
+    <SessionVocab
+      user={user}
+      onBack={() => setTrack("grammar")}
+    />
+  );
+
   // ─── HOME ─────────────────────────────────────────────────────────────────
 
   if (view === "home") return (
@@ -430,7 +434,7 @@ export default function App() {
         )}
       </div>
 
-      {/* Export/import only shown when not signed in */}
+      {/* Export/import — only when not signed in */}
       {!user && (
         <div style={S.dataBar}>
           <span style={S.dataBarLabel}>Progress</span>
@@ -464,14 +468,27 @@ export default function App() {
         </div>
       )}
 
+      {/* Track switcher */}
+      <div style={S.trackRow}>
+        <button
+          style={{...S.trackBtn,...(track==="grammar"?S.trackBtnOn:{})}}
+          onClick={() => setTrack("grammar")}>
+          ◈ Grammar Frames
+        </button>
+        <button
+          style={{...S.trackBtn,...(track==="session"?S.trackBtnOn:{}),...(!user?S.trackLock:{})}}
+          onClick={() => { if (user) setTrack("session"); }}>
+          ✦ Session Vocab{!user ? " 🔒" : ""}
+        </button>
+      </div>
+
+      {/* Frame list */}
       <div style={S.frameList}>
         {FRAMES.map((frame, fi) => {
           const fp = getFrameProgress(frame.id);
           const prevPassed = fi === 0 || getFrameProgress(FRAMES[fi-1].id).passed;
           const cumulativeLocked = cumulativeBlocking(fi);
           const locked = !prevPassed || cumulativeLocked;
-
-          // If this frame needs a cumulative review before it, show the review card
           const needsCumulativeCard = cumulativeRequiredBefore(fi) && prevPassed && cumulativeLocked;
           const afterFrameIdx = fi - 1;
           const cumKey = getCumulativeKey(afterFrameIdx);
@@ -479,7 +496,6 @@ export default function App() {
 
           return (
             <div key={frame.id}>
-              {/* Cumulative review gate card */}
               {needsCumulativeCard && (
                 <div style={{...S.frameCard, background:"#fef8ee", border:`2px solid ${COPPER}`, marginBottom:"1rem"}}>
                   <div style={S.frameTop}>
@@ -495,15 +511,12 @@ export default function App() {
                     </div>
                   </div>
                   <div style={{display:"flex", alignItems:"center", gap:"0.75rem"}}>
-                    <button style={{...S.startBtn, flex:1}}
-                      onClick={() => startCumulativeReview(afterFrameIdx)}>
+                    <button style={{...S.startBtn, flex:1}} onClick={() => startCumulativeReview(afterFrameIdx)}>
                       {cumProgress && !cumProgress.passed ? "↺ Retry Review" : "Begin Review →"}
                     </button>
                     <label style={S.overrideLabel} title="Mark as passed">
                       <input type="checkbox" checked={!!cumProgress?.passed} style={S.overrideCheck}
-                        onChange={() => cumProgress?.passed
-                          ? manualUnmarkCumulative(afterFrameIdx)
-                          : manualMarkCumulative(afterFrameIdx)} />
+                        onChange={() => cumProgress?.passed ? manualUnmarkCumulative(afterFrameIdx) : manualMarkCumulative(afterFrameIdx)} />
                       <span style={S.overrideTick}>{cumProgress?.passed ? "✓" : "○"}</span>
                     </label>
                   </div>
@@ -554,7 +567,8 @@ export default function App() {
 
       <div style={S.footerNote}>
         Flashcard · Multiple Choice · Written: missed cards repeat until 100% clean.<br/>
-        Test: single pass, 85% to advance. Frames unlock sequentially.
+        Test: single pass, 85% to advance. Frames unlock sequentially.<br/>
+        Session Vocab track requires Google sign-in.
       </div>
     </div>
   );
@@ -677,8 +691,6 @@ export default function App() {
     const frameIdx = FRAMES.findIndex(f=>f.id===activeFrame.id);
     const nextStage = activeStage+1;
     const nextFrame = FRAMES[frameIdx+1];
-
-    // After passing a frame's test, check if cumulative review is now required
     const cumulativeNowRequired = passed && activeStage===3 && nextFrame && cumulativeBlocking(frameIdx+1);
 
     return (
@@ -692,7 +704,6 @@ export default function App() {
           <div style={S.resultsSub}>{sessionScore.correct} correct of {sessionScore.total} attempts</div>
           {activeStage===3&&!passed&&<div style={S.resultsAdvice}>Score must reach 85% to advance.</div>}
 
-          {/* Cumulative review prompt */}
           {cumulativeNowRequired && (
             <div style={{background:"#fef8ee", border:`1px solid ${COPPER}`, borderRadius:6, padding:"0.8rem 1rem", maxWidth:420, textAlign:"center"}}>
               <div style={{fontSize:"0.8rem", color:COPPER, fontWeight:"bold", letterSpacing:"0.1em", marginBottom:"0.3rem"}}>CUMULATIVE REVIEW REQUIRED</div>
@@ -715,9 +726,7 @@ export default function App() {
             <button style={S.retryBtn} onClick={()=>startStage(activeFrame,activeStage)}>↺ Retry</button>
             {passed&&nextStage<STAGES.length&&<button style={S.advanceBtn} onClick={()=>{setActiveStage(nextStage);setView("explain");}}>Next: {STAGE_LABELS[nextStage]} →</button>}
             {passed&&nextStage>=STAGES.length&&cumulativeNowRequired&&(
-              <button style={S.advanceBtn} onClick={()=>startCumulativeReview(frameIdx)}>
-                Cumulative Review →
-              </button>
+              <button style={S.advanceBtn} onClick={()=>startCumulativeReview(frameIdx)}>Cumulative Review →</button>
             )}
             {passed&&nextStage>=STAGES.length&&!cumulativeNowRequired&&nextFrame&&(
               <button style={S.advanceBtn} onClick={()=>{setActiveFrame(nextFrame);setActiveStage(0);setView("explain");}}>
@@ -746,19 +755,16 @@ export default function App() {
       const newScore = { correct: sessionScore.correct+(correct?1:0), total: sessionScore.total+1 };
       const newMissed = correct ? missedCards : [...missedCards, card];
       const isLast = cardIdx+1 >= queue.length;
-
       if (isLast) {
         const ratio = newScore.correct/newScore.total;
         markCumulativePassed(cumulativeReview.afterFrameIdx, ratio);
-        setSessionScore(newScore);
-        setMissedCards(newMissed);
+        setSessionScore(newScore); setMissedCards(newMissed);
         setView("cumulativeResults");
       } else {
         setCardIdx(c=>c+1);
         setTypedAnswer(""); setFeedback(null);
         if (inputRef.current) setTimeout(()=>inputRef.current?.focus(), 100);
-        setSessionScore(newScore);
-        setMissedCards(newMissed);
+        setSessionScore(newScore); setMissedCards(newMissed);
       }
     }
 
@@ -819,13 +825,11 @@ export default function App() {
             {passed ? "✓ REVIEW PASSED — FRAME UNLOCKED" : "✗ REVIEW FAILED — RETRY REQUIRED"}
           </div>
           <div style={S.resultsSub}>{sessionScore.correct} correct of {sessionScore.total} cards</div>
-
           {!passed && (
             <div style={S.resultsAdvice}>
               You need 85% to unlock Frame {afterFrameIdx+2}. Review the missed cards below and retry.
             </div>
           )}
-
           {missedCards.length>0 && (
             <div style={S.missedList}>
               <div style={S.missedTitle}>MISSED CARDS — GO BACK AND DRILL THESE FRAMES</div>
@@ -837,7 +841,6 @@ export default function App() {
               ))}
             </div>
           )}
-
           <div style={S.resultsBtns}>
             <button style={S.retryBtn} onClick={()=>startCumulativeReview(afterFrameIdx)}>↺ Retry Review</button>
             {passed && nextFrame && (
